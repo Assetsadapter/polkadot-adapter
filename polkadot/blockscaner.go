@@ -584,6 +584,7 @@ func (bs *DOTBlockScanner) InitExtractResult(sourceKey string, tx *Transaction, 
 		txExtractData = &openwallet.TxExtractData{}
 	}
 
+	// 在解析区块交易时已经对失败交易做过过滤，默认为1可以通过
 	status := "1"
 	reason := ""
 
@@ -624,6 +625,7 @@ func (bs *DOTBlockScanner) InitExtractResult(sourceKey string, tx *Transaction, 
 
 //InitExtractResult optType = 0: 输入输出提取，1: 输入提取，2：输出提取
 func (bs *DOTBlockScanner) InitExtractOutputResult(tx *Transaction, result *ExtractResult, scanTargetFunc openwallet.BlockScanTargetFunc) {
+	// 在解析区块交易时已经对失败交易做过过滤，默认为1可以通过
 	status := "1"
 	reason := ""
 

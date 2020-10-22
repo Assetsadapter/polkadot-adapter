@@ -15,15 +15,16 @@
 package polkadot
 
 import (
-	"github.com/blocktree/openwallet/v2/openwallet"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/tidwall/gjson"
 	"math/big"
 	"strconv"
 	"time"
+
+	"github.com/blocktree/openwallet/v2/openwallet"
+	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/tidwall/gjson"
 )
 
-const BATCH_CHARGE_TO_TAG  = "batch_charge"
+const BATCH_CHARGE_TO_TAG = "batch_charge"
 
 type Block struct {
 	Hash          string        `json:"block"`         // actually block signature in XRP chain
@@ -61,6 +62,7 @@ func GetTransactionInBlock(json *gjson.Result) []Transaction {
 		//fmt.Println("method : ", method, ", success : ", success)
 		//hasUtilityComplete := false
 
+		// 过滤失败交易
 		if !success {
 			continue
 		}
@@ -68,7 +70,7 @@ func GetTransactionInBlock(json *gjson.Result) []Transaction {
 		//获取这个区块的时间
 		if method == "timestamp.set" {
 			args := gjson.Get(extrinsic.Raw, "args")
-			if len(args.Raw) >0 {
+			if len(args.Raw) > 0 {
 				blockTime = gjson.Get(args.Raw, "now").Uint()
 			}
 		}
@@ -83,21 +85,21 @@ func GetTransactionInBlock(json *gjson.Result) []Transaction {
 			batchTransaction := make([]Transaction, 0)
 
 			args := gjson.Get(extrinsic.Raw, "args")
-			if len(args.Raw) >0 {
+			if len(args.Raw) > 0 {
 				calls := gjson.Get(args.Raw, "calls")
-				if len(calls.Raw) >0 {
+				if len(calls.Raw) > 0 {
 					for _, callItem := range calls.Array() {
-						if gjson.Get(callItem.Raw, "method").String() == "balances.transfer" {	//在交易体，发现转账方法
+						if gjson.Get(callItem.Raw, "method").String() == "balances.transfer" { //在交易体，发现转账方法
 
 							callIndex := gjson.Get(callItem.Raw, "callIndex")
 							callIndex0 := gjson.Get(callIndex.Raw, "0")
-							if len(callIndex0.Raw)>0 {
+							if len(callIndex0.Raw) > 0 {
 								if callIndex0.String() != "5" {
 									continue
 								}
 							}
 							callIndex1 := gjson.Get(callIndex.Raw, "1")
-							if len(callIndex1.Raw)>0 {
+							if len(callIndex1.Raw) > 0 {
 								if callIndex1.String() != "0" {
 									continue
 								}
@@ -106,7 +108,7 @@ func GetTransactionInBlock(json *gjson.Result) []Transaction {
 							dest := ""
 							value := ""
 							callArgs := gjson.Get(callItem.Raw, "args")
-							if len(callArgs.Raw)>0 {
+							if len(callArgs.Raw) > 0 {
 								dest = gjson.Get(callArgs.Raw, "dest").String()
 								value = gjson.Get(callArgs.Raw, "value").String()
 							}
@@ -211,7 +213,7 @@ func GetTransactionInBlock(json *gjson.Result) []Transaction {
 		to := ""            //目标地址
 		amountStr := ""     //金额
 		args := gjson.Get(extrinsic.Raw, "args")
-		if len(args.Raw) >0 {
+		if len(args.Raw) > 0 {
 			argsTo = gjson.Get(args.Raw, "dest").String()
 			argsAmountStr = gjson.Get(args.Raw, "value").String()
 		}
