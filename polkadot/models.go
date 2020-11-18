@@ -94,7 +94,7 @@ func GetTransactionInBlock(json *gjson.Result) []Transaction {
 							callIndex := gjson.Get(callItem.Raw, "callIndex")
 							callIndex0 := gjson.Get(callIndex.Raw, "0")
 							if len(callIndex0.Raw) > 0 {
-								if callIndex0.String() != "5" {
+								if callIndex0.String() != "5" && callIndex0.String() != "4" {
 									continue
 								}
 							}
@@ -188,7 +188,7 @@ func GetTransactionInBlock(json *gjson.Result) []Transaction {
 					Fee:         fee,
 					TimeStamp:   batchTransactionItem.TimeStamp,
 					From:        batchTransactionItem.From,
-					To:          BATCH_CHARGE_TO_TAG,
+					To:          batchTransactionItem.To,
 					Amount:      toAmount,
 					BlockHeight: batchTransactionItem.BlockHeight,
 					BlockHash:   batchTransactionItem.BlockHash,
