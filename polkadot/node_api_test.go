@@ -12,12 +12,12 @@ const (
 	testNodeAPI = "http://127.0.0.1:8080"
 )
 
-func PrintJsonLog(t *testing.T, logCont string){
+func PrintJsonLog(t *testing.T, logCont string) {
 	if strings.HasPrefix(logCont, "{") {
 		var str bytes.Buffer
 		_ = json.Indent(&str, []byte(logCont), "", "    ")
 		t.Logf("Get Call Result return: \n\t%+v\n", str.String())
-	}else{
+	} else {
 		t.Logf("Get Call Result return: \n\t%+v\n", logCont)
 	}
 }
@@ -25,7 +25,7 @@ func PrintJsonLog(t *testing.T, logCont string){
 func TestGetCall(t *testing.T) {
 	tw := NewClient(testNodeAPI, true)
 
-	if r, err := tw.GetCall("/metadata/" ); err != nil {
+	if r, err := tw.GetCall("/metadata/"); err != nil {
 		t.Errorf("Get Call Result failed: %v\n", err)
 	} else {
 		PrintJsonLog(t, r.String())
@@ -83,7 +83,9 @@ func Test_getBalance(t *testing.T) {
 
 func Test_sendTransaction(t *testing.T) {
 	c := NewClient(testNodeAPI, true)
-	r, err := c.sendTransaction("0x390284f38450ff27a19377c88aa42031c2e4b658dd2df9e839f620f21d97de4848705100ebf250f774085bf37d3b52067fafa5c3a3362b84e6274592cce6b89d3a73705f2c8478028a11007cb8b183471fb4aa43a1f56136b0c7efcb191c7e03b563e60585000800040097dbc27785f579866e9f11067dd3659b45cfd95a9c32a6a3a3e0ea43a50e173f0700e8764817")
+	r, err := c.sendTransaction("0x39028453538d40098561df3a2fe577c2995d7f6a5bd45f0f5708e9b9e11cc4896e1db800ba6d5" +
+		"4c43a5c07e6d1b89ff51d356ac686b0bcd592d00a5140c4842a054c567830aad78e0bd03c86792e794756a516507b1911f824267d51b75" +
+		"b3676d0a9b40295030000050009d0dbc83629dcd90f7e1cc989cd2cd713205adff4a3b0f2699e31b7e35981340700dc5c2402")
 	if err != nil {
 		fmt.Println(err)
 	} else {

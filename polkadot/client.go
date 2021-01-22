@@ -14,7 +14,7 @@ func NewApiClient(wm *WalletManager) error {
 	}
 	api.APIChoose = wm.Config.APIChoose
 	if api.APIChoose == "rpc" {
-		api.Client = NewClient(wm.Config.NodeAPI, false, wm.Symbol())
+		api.Client = NewClient(wm.Config.NodeAPI, false)
 	} else if api.APIChoose == "ws" {
 		api.WSClient = NewWSClient(wm, wm.Config.WSAPI, 0, false)
 	}
@@ -46,7 +46,7 @@ func (c *ApiClient) getMostHeightBlock() (*Block, error) {
 		err             error
 	)
 	if c.APIChoose == "rpc" {
-		mostHeightBlock, err = c.Client.getMostHeightBlock()
+		mostHeightBlock, err = c.Client.getLastBlock()
 	} else if c.APIChoose == "ws" {
 		//mostHeightBlock, err = decoder.wm.WSClient.getBlockHeight()
 	}
@@ -104,7 +104,7 @@ func (c *ApiClient) getTxArtifacts() (*TxArtifacts, error) {
 		err         error
 	)
 	if c.APIChoose == "rpc" {
-		txArtifacts, err = c.Client.getTxArtifacts()
+		txArtifacts, err = c.Client.getTxMaterial()
 	} else if c.APIChoose == "ws" {
 		//block, err = c.WSClient.TxArtifacts()
 	}

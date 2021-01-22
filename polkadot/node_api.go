@@ -17,6 +17,7 @@ package polkadot
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
@@ -39,40 +40,28 @@ type Client struct {
 	AccessToken string
 	Debug       bool
 	client      *req.Req
-	Symbol      string
 }
 
-type Response struct {
-	Code    int         `json:"code,omitempty"`
-	Error   interface{} `json:"error,omitempty"`
-	Result  interface{} `json:"result,omitempty"`
-	Message string      `json:"message,omitempty"`
-	Id      string      `json:"id,omitempty"`
-}
-
-func NewClient(url string /*token string,*/, debug bool, symbol string) *Client {
+// NewClient 创建 API 客户端
+func NewClient(url string, debug bool) *Client {
 	c := Client{
 		BaseURL: url,
-		//	AccessToken: token,
-		Debug: debug,
+		Debug:   debug,
 	}
 
 	api := req.New()
-	//trans, _ := api.Client().Transport.(*http.Transport)
-	//trans.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	c.client = api
-	c.Symbol = symbol
-
+	c.client.SetTimeout(3 * time.Second)
 	return &c
 }
 
-// 用get方法获取内容
+// PostCall 发送 POST 请求
 func (c *Client) PostCall(path string, v map[string]interface{}) (*gjson.Result, error) {
 	if c.Debug {
 		log.Debug("Start Request API...")
 	}
 
-	r, err := req.Post(c.BaseURL+path, req.BodyJSON(&v))
+	r, err := c.client.Post(c.BaseURL+path, req.BodyJSON(&v))
 
 	if c.Debug {
 		log.Std.Info("Request API Completed")
@@ -86,21 +75,24 @@ func (c *Client) PostCall(path string, v map[string]interface{}) (*gjson.Result,
 		return nil, err
 	}
 
-	resp := gjson.ParseBytes(r.Bytes())
+	result := gjson.ParseBytes(r.Bytes())
 
-	result := resp
+	err = isError(&result)
+	if err != nil {
+		return nil, err
+	}
 
 	return &result, nil
 }
 
-// 用get方法获取内容
+// GetCall 发送 GET 请求
 func (c *Client) GetCall(path string) (*gjson.Result, error) {
 
 	if c.Debug {
 		log.Debug("Start Request API...")
 	}
 
-	r, err := req.Get(c.BaseURL + path)
+	r, err := c.client.Get(c.BaseURL + path)
 
 	if c.Debug {
 		log.Std.Info("Request API Completed")
@@ -114,25 +106,45 @@ func (c *Client) GetCall(path string) (*gjson.Result, error) {
 		return nil, err
 	}
 
-	resp := gjson.ParseBytes(r.Bytes())
+	result := gjson.ParseBytes(r.Bytes())
 
-	result := resp
+	err = isError(&result)
+	if err != nil {
+		return nil, err
+	}
 
 	return &result, nil
 }
 
-// 获取当前最高区块
+// isError 检查请求结果是否异常
+func isError(result *gjson.Result) error {
+	if result == nil {
+		return fmt.Errorf("request failed result is nil")
+	}
+
+	if result.Get("message").Exists() {
+		return fmt.Errorf("request failed resp message: %s", result.Get("message").String())
+	}
+
+	if result.Get("error").Exists() {
+		return fmt.Errorf("request failed resp error: %s", result.Get("error").String())
+	}
+
+	return nil
+}
+
+// getBlockHeight 获取当前最高区块
 func (c *Client) getBlockHeight() (uint64, error) {
-	mostHeightBlock, err := c.getMostHeightBlock()
+	mostHeightBlock, err := c.getLastBlock()
 	if err != nil {
 		return 0, err
 	}
 	return mostHeightBlock.Height, nil
 }
 
-// 获取当前最高区块
-func (c *Client) getTxArtifacts() (*TxArtifacts, error) {
-	resp, err := c.GetCall("/tx/artifacts/")
+// getTxMaterial 获取离线签名所需的参数
+func (c *Client) getTxMaterial() (*TxArtifacts, error) {
+	resp, err := c.GetCall("/transaction/material")
 
 	if err != nil {
 		return nil, err
@@ -140,9 +152,9 @@ func (c *Client) getTxArtifacts() (*TxArtifacts, error) {
 	return GetTxArtifacts(resp), nil
 }
 
-//获取当前最新高度
-func (c *Client) getMostHeightBlock() (*Block, error) {
-	resp, err := c.GetCall("/block/")
+// getLastBlock 获取当前最新区块
+func (c *Client) getLastBlock() (*Block, error) {
+	resp, err := c.GetCall("/blocks/head")
 
 	if err != nil {
 		return nil, err
@@ -150,9 +162,9 @@ func (c *Client) getMostHeightBlock() (*Block, error) {
 	return NewBlock(resp), nil
 }
 
-// 获取地址余额
+// getBalance 获取地址余额
 func (c *Client) getBalance(address string, ignoreReserve bool, reserveAmount int64) (*AddrBalance, error) {
-	r, err := c.GetCall("/balance/" + address)
+	r, err := c.GetCall(fmt.Sprintf("/accounts/%s/balance-info", address))
 
 	if err != nil {
 		return nil, err
@@ -177,8 +189,9 @@ func (c *Client) getBalance(address string, ignoreReserve bool, reserveAmount in
 	return &AddrBalance{Address: address, Balance: balance, Freeze: feeFrozen, Free: free, Actived: true, Nonce: nonce}, nil
 }
 
+// getBlockByHeight 获取指定高度的区块
 func (c *Client) getBlockByHeight(height uint64) (*Block, error) {
-	resp, err := c.GetCall("/block/" + strconv.FormatUint(height, 10))
+	resp, err := c.GetCall("/blocks/" + strconv.FormatUint(height, 10))
 
 	if err != nil {
 		return nil, err
@@ -186,12 +199,13 @@ func (c *Client) getBlockByHeight(height uint64) (*Block, error) {
 	return NewBlock(resp), nil
 }
 
+// sendTransaction 发送签名交易
 func (c *Client) sendTransaction(rawTx string) (string, error) {
 	body := map[string]interface{}{
 		"tx": rawTx,
 	}
 
-	resp, err := c.PostCall("/tx", body)
+	resp, err := c.PostCall("/transaction", body)
 	if err != nil {
 		return "", err
 	}

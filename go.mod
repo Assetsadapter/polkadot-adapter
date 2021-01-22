@@ -8,6 +8,7 @@ require (
 	github.com/blocktree/go-owcdrivers v1.2.10
 	github.com/blocktree/go-owcrypt v1.1.4
 	github.com/blocktree/openwallet/v2 v2.0.2
+	github.com/blocktree/polkadot-adapter v1.0.34
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/ethereum/go-ethereum v1.9.9
 	github.com/gorilla/websocket v1.4.1

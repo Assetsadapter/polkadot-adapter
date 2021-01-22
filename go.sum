@@ -69,8 +69,6 @@ github.com/blocktree/go-owcdrivers v1.0.39/go.mod h1:ZhndO+bVH1s39I/ECFg2lHwo6Ou
 github.com/blocktree/go-owcdrivers v1.0.42/go.mod h1:icMC6RUkkOp+Zw9jRZ+x+TCwSosX2v2rT9aePeyn+4E=
 github.com/blocktree/go-owcdrivers v1.1.24/go.mod h1:Ob+XKMlsFIT+c+1vd9bnBbTiMWn78BPFqFf3w4XUHTI=
 github.com/blocktree/go-owcdrivers v1.2.0/go.mod h1:x1oD0e9+dYvfjxkZmSNc1ss7Lfdzkb29DojpAvm/aTw=
-github.com/blocktree/go-owcdrivers v1.2.7 h1:tEWRbDuexWHLm3VwbGej+18v9+Y4/3w4VQzhBRuOaoM=
-github.com/blocktree/go-owcdrivers v1.2.7/go.mod h1:9Lu3/wOoghg3sy95DDv3zEypLF2CDYH7oRjRt088EUw=
 github.com/blocktree/go-owcdrivers v1.2.10 h1:JBmFypAJGvvLigeyt8l8tTbENLxv51zRhPXEDSNryYw=
 github.com/blocktree/go-owcdrivers v1.2.10/go.mod h1:9Lu3/wOoghg3sy95DDv3zEypLF2CDYH7oRjRt088EUw=
 github.com/blocktree/go-owcrypt v1.0.1/go.mod h1:5FCinL/4XVEqbmAFTOUgfMJVNJEw6WzVy624qsxzZC8=
@@ -93,6 +91,8 @@ github.com/blocktree/openwallet v1.5.4 h1:GcwfnaiiGxpRtSuVe83ntGcUyOwSJtK+VxIHbd
 github.com/blocktree/openwallet v1.5.4/go.mod h1:e5IqJ6OqCM5qEN4TTxeeWbd3l3kCRLPC6fG4/KLiA7I=
 github.com/blocktree/openwallet/v2 v2.0.2 h1:niuOikpJZSWBQQ3i3X0Yph4UOTC/BdZGWEF64JKVfSM=
 github.com/blocktree/openwallet/v2 v2.0.2/go.mod h1:ZHgzHHTfDznBttwScFfzWzl5YMigw9w+KRWUq9lsQdc=
+github.com/blocktree/polkadot-adapter v1.0.34 h1:iU7yfeXeTBvjruZZT5n+Vkl+T1HnI/Mve2T833vc2xY=
+github.com/blocktree/polkadot-adapter v1.0.34/go.mod h1:Y2pqUHFAwlNMKwK2/iZHXSmQWTzrkSy8FSZsAGXliuU=
 github.com/blocktree/rcproto-adapter v1.0.0/go.mod h1:Z24b9N+wPEOsFPGy+WVYa6ERIj5FH4H6eRZkNjMjr4Y=
 github.com/blocktree/ripple-adapter v1.0.3/go.mod h1:9BidhMwPmLjKnyuI7YurlyFCNdX4SzLsXG835q8zfLQ=
 github.com/blocktree/ripple-adapter v1.0.13/go.mod h1:eHHzuuFqm9NnWfc+wpx0XgcKQPxGmiyZ5pFcLV4ngjA=

@@ -159,6 +159,9 @@ func (decoder *TransactionDecoder) CreateDotRawTransaction(wrapper openwallet.Wa
 	fromPub := ""
 	nonce := uint64(0)
 	for _, a := range addressesBalanceList {
+		if a.Balance.Int64() < int64(amount+fee) {
+			continue
+		}
 		from = a.Address
 		fromPub = addresses[a.index].PublicKey
 		nonce = a.Nonce
