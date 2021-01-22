@@ -183,7 +183,7 @@ func (decoder *TransactionDecoder) CreateDotRawTransaction(wrapper openwallet.Wa
 	rawTx.Fees = convertToAmount(onChainFee, decoder.wm.Decimal()) //strconv.FormatUint(fee, 10)	//链上实际收取的，加上0.01的固定消耗
 	rawTx.FeeRate = convertToAmount(fee, decoder.wm.Decimal())     //strconv.FormatUint(fee, 10)
 
-	mostHeightBlock, err := decoder.wm.ApiClient.getMostHeightBlock()
+	mostHeightBlock, err := decoder.wm.ApiClient.getLastBlock()
 	if err != nil {
 		return err
 	}
@@ -458,7 +458,7 @@ func (decoder *TransactionDecoder) createRawTransaction(wrapper openwallet.Walle
 
 	rawTx.SetExtParam("nonce", nonceJSON)
 
-	mostHeightBlock, err := decoder.wm.ApiClient.getMostHeightBlock()
+	mostHeightBlock, err := decoder.wm.ApiClient.getLastBlock()
 	if err != nil {
 		return errors.New("Failed to get block height when create summay transaction!")
 	}
@@ -517,7 +517,7 @@ func (decoder *TransactionDecoder) CreateSummaryRawTransactionWithError(wrapper 
 
 func (decoder *TransactionDecoder) CreateEmptyRawTransactionAndMessage(fromPub string, toPub string, amount uint64, nonce uint64, fee uint64, mostHeightBlock *Block) (string, string, error) {
 
-	txArtifacts, err := decoder.wm.ApiClient.getTxArtifacts()
+	txArtifacts, err := decoder.wm.ApiClient.getTxMaterial()
 	if err != nil {
 		return "", "", err
 	}

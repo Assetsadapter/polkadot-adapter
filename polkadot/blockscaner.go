@@ -360,7 +360,7 @@ func (bs *DOTBlockScanner) newBlockNotify(block *Block, isFork bool) {
 
 //BatchExtractTransaction 批量提取交易单
 //bitcoin 1M的区块链可以容纳3000笔交易，批量多线程处理，速度更快
-func (bs *DOTBlockScanner) BatchExtractTransaction(blockHeight uint64, blockHash string, txs []Transaction, memPool bool) error {
+func (bs *DOTBlockScanner) BatchExtractTransaction(blockHeight uint64, blockHash string, txs []*Transaction, memPool bool) error {
 
 	var (
 		quit       = make(chan struct{})
@@ -411,11 +411,11 @@ func (bs *DOTBlockScanner) BatchExtractTransaction(blockHeight uint64, blockHash
 	}
 
 	//提取工作
-	extractWork := func(eblockHeight uint64, eBlockHash string, mTxs []Transaction, eProducer chan ExtractResult) {
+	extractWork := func(eblockHeight uint64, eBlockHash string, mTxs []*Transaction, eProducer chan ExtractResult) {
 		for _, tx := range mTxs {
 			bs.extractingCH <- struct{}{}
 			//shouldDone++
-			go func(mBlockHeight uint64, mTx Transaction, end chan struct{}, mProducer chan<- ExtractResult) {
+			go func(mBlockHeight uint64, mTx *Transaction, end chan struct{}, mProducer chan<- ExtractResult) {
 
 				//导出提出的交易
 				mProducer <- bs.ExtractTransaction(mBlockHeight, eBlockHash, mTx, bs.ScanTargetFunc)
@@ -478,7 +478,7 @@ func (bs *DOTBlockScanner) extractRuntime(producer chan ExtractResult, worker ch
 }
 
 //ExtractTransaction 提取交易单
-func (bs *DOTBlockScanner) ExtractTransaction(blockHeight uint64, blockHash string, transaction Transaction, scanAddressFunc openwallet.BlockScanTargetFunc) ExtractResult {
+func (bs *DOTBlockScanner) ExtractTransaction(blockHeight uint64, blockHash string, transaction *Transaction, scanAddressFunc openwallet.BlockScanTargetFunc) ExtractResult {
 
 	var (
 		result = ExtractResult{
@@ -496,7 +496,7 @@ func (bs *DOTBlockScanner) ExtractTransaction(blockHeight uint64, blockHash stri
 		transaction.BlockHash = blockHash
 	}
 
-	bs.extractTransaction(&transaction, &result, scanAddressFunc)
+	bs.extractTransaction(transaction, &result, scanAddressFunc)
 
 	return result
 
@@ -1003,7 +1003,7 @@ func (bs *DOTBlockScanner) SaveLocalNewBlock(blockHeight uint64, blockHash strin
 }
 
 //GetTxIDsInMemPool 获取待处理的交易池中的交易单IDs
-func (wm *WalletManager) GetTxIDsInMemPool() ([]Transaction, error) {
+func (wm *WalletManager) GetTxIDsInMemPool() ([]*Transaction, error) {
 	return nil, nil
 }
 

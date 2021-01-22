@@ -40,7 +40,7 @@ func (c *ApiClient) getBlockHeight() (uint64, error) {
 }
 
 //获取当前最新高度
-func (c *ApiClient) getMostHeightBlock() (*Block, error) {
+func (c *ApiClient) getLastBlock() (*Block, error) {
 	var (
 		mostHeightBlock *Block
 		err             error
@@ -98,16 +98,16 @@ func (c *ApiClient) sendTransaction(rawTx string) (string, error) {
 	return txid, err
 }
 
-func (c *ApiClient) getTxArtifacts() (*TxArtifacts, error) {
+func (c *ApiClient) getTxMaterial() (*TxArtifacts, error) {
 	var (
-		txArtifacts *TxArtifacts
-		err         error
+		txMaterial *TxArtifacts
+		err        error
 	)
 	if c.APIChoose == "rpc" {
-		txArtifacts, err = c.Client.getTxMaterial()
+		txMaterial, err = c.Client.getTxMaterial()
 	} else if c.APIChoose == "ws" {
 		//block, err = c.WSClient.TxArtifacts()
 	}
 
-	return txArtifacts, err
+	return txMaterial, err
 }
