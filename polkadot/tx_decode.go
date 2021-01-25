@@ -127,9 +127,6 @@ func (decoder *TransactionDecoder) CreateDotRawTransaction(wrapper openwallet.Wa
 		if err != nil {
 			return err
 		}
-		nonce := decoder.wm.GetAddressNonce(wrapper, balance)
-		balance.Nonce = nonce
-
 		balance.index = i
 		addressesBalanceList = append(addressesBalanceList, *balance)
 	}
@@ -445,7 +442,10 @@ func (decoder *TransactionDecoder) createRawTransaction(wrapper openwallet.Walle
 	if err != nil {
 		return errors.New("Failed to get nonce when create summay transaction!")
 	}
-	nonce := decoder.wm.GetAddressNonce(wrapper, addrNodeBalance)
+	nonce, err := decoder.wm.GetAddressNonce(wrapper, addrNodeBalance)
+	if err != nil {
+		return err
+	}
 
 	nonceJSON := map[string]interface{}{}
 	if len(rawTx.ExtParam) > 0 {

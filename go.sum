@@ -91,8 +91,6 @@ github.com/blocktree/openwallet v1.5.4 h1:GcwfnaiiGxpRtSuVe83ntGcUyOwSJtK+VxIHbd
 github.com/blocktree/openwallet v1.5.4/go.mod h1:e5IqJ6OqCM5qEN4TTxeeWbd3l3kCRLPC6fG4/KLiA7I=
 github.com/blocktree/openwallet/v2 v2.0.2 h1:niuOikpJZSWBQQ3i3X0Yph4UOTC/BdZGWEF64JKVfSM=
 github.com/blocktree/openwallet/v2 v2.0.2/go.mod h1:ZHgzHHTfDznBttwScFfzWzl5YMigw9w+KRWUq9lsQdc=
-github.com/blocktree/polkadot-adapter v1.0.34 h1:iU7yfeXeTBvjruZZT5n+Vkl+T1HnI/Mve2T833vc2xY=
-github.com/blocktree/polkadot-adapter v1.0.34/go.mod h1:Y2pqUHFAwlNMKwK2/iZHXSmQWTzrkSy8FSZsAGXliuU=
 github.com/blocktree/rcproto-adapter v1.0.0/go.mod h1:Z24b9N+wPEOsFPGy+WVYa6ERIj5FH4H6eRZkNjMjr4Y=
 github.com/blocktree/ripple-adapter v1.0.3/go.mod h1:9BidhMwPmLjKnyuI7YurlyFCNdX4SzLsXG835q8zfLQ=
 github.com/blocktree/ripple-adapter v1.0.13/go.mod h1:eHHzuuFqm9NnWfc+wpx0XgcKQPxGmiyZ5pFcLV4ngjA=
