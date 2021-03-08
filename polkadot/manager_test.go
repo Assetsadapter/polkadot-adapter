@@ -20,14 +20,13 @@ import (
 	"path/filepath"
 )
 
-
 var (
 	tw *WalletManager
 )
 
 func init() {
 
-	tw = testNewWalletManager()
+	//tw = testNewWalletManager()
 }
 
 func testNewWalletManager() *WalletManager {

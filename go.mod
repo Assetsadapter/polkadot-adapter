@@ -7,6 +7,7 @@ require (
 	github.com/astaxie/beego v1.12.0
 	github.com/blocktree/go-owcdrivers v1.2.10
 	github.com/blocktree/go-owcrypt v1.1.4
+	github.com/blocktree/openwallet v1.5.4
 	github.com/blocktree/openwallet/v2 v2.0.2
 	github.com/blocktree/polkadot-adapter v1.0.34
 	github.com/bwmarrin/snowflake v0.3.0

@@ -15,7 +15,7 @@
 package polkadot
 
 import (
-	"fmt"
+	"github.com/blocktree/openwallet/log"
 	"math/big"
 	"strconv"
 	"time"
@@ -53,82 +53,136 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 	var (
 		blockHash    = gjson.Get(json.Raw, "hash").String()
 		blockHeight  = gjson.Get(json.Raw, "number").Uint()
-		transactions = []*Transaction{}
+		transactions = make([]*Transaction, 0)
 	)
-
-	getMethod := func(result gjson.Result) string {
-		return fmt.Sprintf("%s.%s", result.Get("method.pallet").String(), result.Get("method.method").String())
-	}
 
 	blockTime := uint64(time.Now().Unix())
 
 	for _, extrinsic := range gjson.Get(json.Raw, "extrinsics").Array() {
-		method := getMethod(extrinsic)
+		//fmt.Println("extrinsic : " , extrinsic)
 		success := gjson.Get(extrinsic.Raw, "success").Bool()
+		method := ""
+		pallet := ""
 
-		// 过滤失败交易
+		methodJSON := gjson.Get(extrinsic.Raw, "method")
+		if methodJSON.Exists() {
+			method = gjson.Get(methodJSON.Raw, "method").String()
+			pallet = gjson.Get(methodJSON.Raw, "pallet").String()
+		}
+
+		//log.Debug("pallet : ", pallet, "method : ", method,", success : ", success)
+		//hasUtilityComplete := false
+
 		if !success {
 			continue
 		}
 
-		// 获取这个区块的时间
-		if method == "timestamp.set" {
-			blockTime = extrinsic.Get("args.now").Uint()
+		//获取这个区块的时间
+		if pallet == "timestamp" && method == "set" {
+			args := gjson.Get(extrinsic.Raw, "args")
+			if len(args.Raw) > 0 {
+				blockTime = gjson.Get(args.Raw, "now").Uint()
+			}
 		}
 
-		// 解析批量转账
-		if method == "utility.batch" {
-			batchTxs := []*Transaction{}
-			txHash := extrinsic.Get("hash").String()
-			txFrom := extrinsic.Get("signature.signer").String()
-			calls := extrinsic.Get("args.calls").Array()
+		//解析批量转账
+		if pallet == "utility" && method == "batch" {
+
+			txid := gjson.Get(extrinsic.Raw, "hash").String()
+
+			toArr := make([]string, 0)
 			toAmount := uint64(0)
-			toArray := []string{}
-			for _, call := range calls {
+			batchTransaction := make([]*Transaction, 0)
 
-				method := getMethod(call)
-				to := call.Get("args.dest").String()
-				value := call.Get("args.value").Uint()
-				if method == "balances.transfer" {
-					batchTxs = append(batchTxs, &Transaction{
-						TxID:        txHash,
-						TimeStamp:   blockTime,
-						From:        txFrom,
-						To:          to,
-						Amount:      value,
-						BlockHash:   blockHash,
-						BlockHeight: blockHeight,
-						Status:      "-1",
-					})
-				}
-			}
+			args := gjson.Get(extrinsic.Raw, "args")
+			if len(args.Raw) > 0 {
+				calls := gjson.Get(args.Raw, "calls")
+				if len(calls.Raw) > 0 {
+					for _, callItem := range calls.Array() {
+						callPallet := ""
+						callMethod := ""
+						dest := ""
+						value := ""
 
-			// 比对交易事件是否匹配的上， 确定交易状态
-			for _, event := range extrinsic.Get("events").Array() {
-				eventMethod := getMethod(event)
-				if eventMethod == "balances.Transfer" {
-					datas := event.Get("data").Array()
-					from := datas[0].String()
-					to := datas[1].String()
-					value := datas[2].Uint()
-					for i, tx := range batchTxs {
-						if tx.Status == "-1" {
-							if tx.From != from {
-								continue
+						callMethodJSON := gjson.Get(callItem.Raw, "method")
+						if callMethodJSON.Exists() {
+							callPallet = gjson.Get(callMethodJSON.Raw, "pallet").String()
+							callMethod = gjson.Get(callMethodJSON.Raw, "method").String()
+						}
+
+						if callPallet == "balances" && callMethod == "transferKeepAlive" { //在交易体，发现转账方法
+							callArgs := gjson.Get(callItem.Raw, "args")
+							if callArgs.Exists() {
+								callDest := gjson.Get(callArgs.Raw, "dest")
+								if callDest.Exists() {
+									dest = gjson.Get(callDest.Raw, "Id").String()
+								}
+								value = gjson.Get(callArgs.Raw, "value").String()
 							}
-							if tx.To != to {
-								continue
+
+							amountInt, err := strconv.ParseInt(value, 10, 64)
+							if err == nil {
+								amount := uint64(amountInt)
+								transaction := Transaction{
+									TxID:        txid,
+									TimeStamp:   blockTime,
+									From:        "",
+									To:          dest,
+									Amount:      amount,
+									BlockHeight: blockHeight,
+									BlockHash:   blockHash,
+									Status:      "-1",
+								}
+
+								batchTransaction = append(batchTransaction, &transaction)
 							}
-							if tx.Amount != value {
-								continue
-							}
-							batchTxs[i].Status = "1"
-							toAmount, _ = math.SafeAdd(toAmount, value)
-							toArray = append(toArray, to)
 						}
 					}
 				}
 			}
+
+			for _, event := range gjson.Get(extrinsic.Raw, "events").Array() {
+				eventPallet := ""
+				eventMethod := ""
+
+				eventMethodJSON := gjson.Get(event.Raw, "method")
+				if eventMethodJSON.Exists() {
+					eventPallet = gjson.Get(eventMethodJSON.Raw, "pallet").String()
+					eventMethod = gjson.Get(eventMethodJSON.Raw, "method").String()
+				}
+
+				if eventPallet == "balances" && eventMethod == "Transfer" {
+					data := gjson.Get(event.Raw, "data").Array()
+					if len(data) == 3 {
+						from := data[0].String()
+						to := data[1].String()
+						amountStr := data[2].String()
+
+						for batchTransactionIndex, batchTransactionItem := range batchTransaction {
+							if batchTransactionItem.Status == "-1" { //未被认定
+								if batchTransactionItem.To == to { //转入地址与传入参数对得上
+									amountInt, err := strconv.ParseInt(amountStr, 10, 64)
+									if err == nil {
+										amount := uint64(amountInt)
+										if batchTransactionItem.Amount == amount { //金额与传入参数对得上
+											batchTransaction[batchTransactionIndex].From = from
+											toArr = append(toArr, to+":"+amountStr)
+											toAmount, _ = math.SafeAdd(toAmount, amount)
+											batchTransaction[batchTransactionIndex].Status = "1"
+
+											break
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			//if hasUtilityComplete==false{
+			//	continue
+			//}
 
 			fee := uint64(0)
 
@@ -141,26 +195,38 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 				fee, _ = math.SafeAdd(tip, partialFee)
 			}
 
-			for _, batchTransactionItem := range batchTxs {
-				transactions = append(transactions, &Transaction{
+			for _, batchTransactionItem := range batchTransaction {
+				transaction := Transaction{
 					TxID:        batchTransactionItem.TxID,
 					Fee:         fee,
 					TimeStamp:   batchTransactionItem.TimeStamp,
 					From:        batchTransactionItem.From,
-					To:          batchTransactionItem.To,
+					To:          BATCH_CHARGE_TO_TAG,
 					Amount:      toAmount,
 					BlockHeight: batchTransactionItem.BlockHeight,
 					BlockHash:   batchTransactionItem.BlockHash,
 					Status:      batchTransactionItem.Status,
-					ToArr:       toArray,
-				})
+					ToArr:       toArr,
+				}
+
+				transactions = append(transactions, &transaction)
 				break
 			}
 
 			continue
 		}
 
-		if method != "balances.transfer" && method != "claims.attest" && method != "balances.transferKeepAlive" { //不是这个method的全部不要
+		isContinue := false
+		if pallet == "balances" && method == "transfer" {
+			isContinue = true
+		}
+		if pallet == "claims" && method == "attest" {
+			isContinue = true
+		}
+		if pallet == "balances" && method == "transferKeepAlive" {
+			isContinue = true
+		}
+		if !isContinue { //不是这个method的全部不要
 			continue
 		}
 
@@ -171,13 +237,21 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 		amountStr := ""     //金额
 		args := gjson.Get(extrinsic.Raw, "args")
 		if len(args.Raw) > 0 {
-			argsTo = gjson.Get(args.Raw, "dest").String()
+			//argsTo = gjson.Get(args.Raw, "dest").String()
+			dest := gjson.Get(args.Raw, "dest")
+			if dest.Exists() {
+				argsTo = gjson.Get(dest.Raw, "Id").String()
+			}
 			argsAmountStr = gjson.Get(args.Raw, "value").String()
 		}
 
 		for _, event := range gjson.Get(extrinsic.Raw, "events").Array() {
-			method := getMethod(event)
-			if method == "balances.Transfer" {
+
+			eventMethodJSON := gjson.Get(event.Raw, "method")
+			eventPallet := gjson.Get(eventMethodJSON.Raw, "pallet").String()
+			eventMethod := gjson.Get(eventMethodJSON.Raw, "method").String()
+
+			if eventPallet == "balances" && eventMethod == "Transfer" {
 				data := gjson.Get(event.Raw, "data").Array()
 				if len(data) == 3 {
 					from = data[0].String()
@@ -185,7 +259,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 					amountStr = data[2].String()
 				}
 			}
-			if method == "claims.Claimed" {
+			if gjson.Get(event.Raw, "method").String() == "claims.Claimed" {
 				data := gjson.Get(event.Raw, "data").Array()
 				if len(data) == 3 {
 					//from = data[1].String()
@@ -201,10 +275,10 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 		if argsAmountStr == "" && amountStr == "" { //没有取到值
 			continue
 		}
-		if method == "balances.transfer" && argsTo != to { //值不一样
+		if pallet == "balances" && method == "transfer" && argsTo != to { //值不一样
 			continue
 		}
-		if method == "balances.transfer" && argsAmountStr != amountStr { //值不一样
+		if pallet == "balances" && method == "transfer" && argsAmountStr != amountStr { //值不一样
 			continue
 		}
 
@@ -221,11 +295,14 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 			fee, _ = math.SafeAdd(tip, partialFee)
 		}
 
+		//fmt.Println("txid : ", txid, ",from: ", from, ",to: ", to, ",amount: ", amountStr, ",time: " ,blockTime, ",fee: ", fee)
+		log.Debug("txid : ", txid, ",from: ", from, ",to: ", to, ",amount: ", amountStr, ",time: ", blockTime, ",fee: ", fee)
+
 		amountInt, err := strconv.ParseInt(amountStr, 10, 64)
 		if err == nil {
 			amount := uint64(amountInt)
 
-			transactions = append(transactions, &Transaction{
+			transaction := Transaction{
 				TxID:        txid,
 				Fee:         fee,
 				TimeStamp:   blockTime,
@@ -235,7 +312,9 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 				BlockHeight: blockHeight,
 				BlockHash:   blockHash,
 				Status:      "1",
-			})
+			}
+
+			transactions = append(transactions, &transaction)
 		}
 	}
 
