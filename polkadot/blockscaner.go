@@ -545,25 +545,45 @@ func (bs *DOTBlockScanner) extractTransaction(trx *Transaction, result *ExtractR
 
 	//此为多地址输出
 	if trx.To == BATCH_CHARGE_TO_TAG && len(trx.ToArr) > 0 {
+		for _, toStr := range trx.ToArr {
+			trx.ToDecArr = make([]string, 0)
+			toAddr := strings.Split(toStr, ":")[0]
+			toAmount := strings.Split(toStr, ":")[1]
 
+			amountInt, _ := strconv.ParseInt(toAmount, 10, 64)
+			amount_dec, _ := decimal.NewFromString(convertToAmount(uint64(amountInt), bs.wm.Decimal()))
+			amount_dec_str := amount_dec.Abs().String()
+			trx.ToDecArr = append(trx.ToDecArr, toAddr+":"+amount_dec_str)
+		}
 	} else {
 		//amountStr := fmt.Sprintf("%d", trx.Amount)
 		toArr := []string{trx.To}
 		trx.ToArr = toArr
+		//整数转小数
+		trx.ToDecArr = make([]string, 0)
+		//for _, toStr := range trx.ToArr {
+		addr := trx.To
+		amountStr := fmt.Sprintf("%d", trx.Amount)
+
+		amountInt, _ := strconv.ParseInt(amountStr, 10, 64)
+		amount_dec, _ := decimal.NewFromString(convertToAmount(uint64(amountInt), bs.wm.Decimal()))
+		amount_dec_str := amount_dec.Abs().String()
+
+		trx.ToDecArr = append(trx.ToDecArr, addr+":"+amount_dec_str)
 	}
 
-	//整数转小数
-	trx.ToDecArr = make([]string, 0)
-	//for _, toStr := range trx.ToArr {
-	addr := trx.To
-	amountStr := fmt.Sprintf("%d", trx.Amount)
-
-	amountInt, _ := strconv.ParseInt(amountStr, 10, 64)
-	amount_dec, _ := decimal.NewFromString(convertToAmount(uint64(amountInt), bs.wm.Decimal()))
-	amount_dec_str := amount_dec.Abs().String()
-
-	trx.ToDecArr = append(trx.ToDecArr, addr+":"+amount_dec_str)
-	//}
+	////整数转小数
+	//trx.ToDecArr = make([]string, 0)
+	////for _, toStr := range trx.ToArr {
+	//addr := trx.To
+	//amountStr := fmt.Sprintf("%d", trx.Amount)
+	//
+	//amountInt, _ := strconv.ParseInt(amountStr, 10, 64)
+	//amount_dec, _ := decimal.NewFromString(convertToAmount(uint64(amountInt), bs.wm.Decimal()))
+	//amount_dec_str := amount_dec.Abs().String()
+	//
+	//trx.ToDecArr = append(trx.ToDecArr, addr+":"+amount_dec_str)
+	////}
 
 	//订阅地址为交易单中的发送者
 	accountID1, ok1 := scanTargetFunc(openwallet.ScanTarget{Address: from, Symbol: bs.wm.Symbol(), BalanceModelType: openwallet.BalanceModelTypeAddress})
