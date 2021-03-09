@@ -110,7 +110,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 							callMethod = gjson.Get(callMethodJSON.Raw, "method").String()
 						}
 
-						if callPallet == "balances" && callMethod == "transferKeepAlive" { //在交易体，发现转账方法
+						if callPallet == "balances" && (callMethod == "transfer" || callMethod == "transferKeepAlive") { //在交易体，发现转账方法
 							callArgs := gjson.Get(callItem.Raw, "args")
 							if callArgs.Exists() {
 								callDest := gjson.Get(callArgs.Raw, "dest")
