@@ -235,13 +235,13 @@ func (ws *WSClient) autoReconnectNode() error {
 		select {
 		case <-ws.reconnect:
 			//重新连接
-			ws.wm.Log.Info("Connecting to XRP node")
+			ws.wm.Log.Info("Connecting to node")
 			err = ws.connectNode()
 			if err != nil {
-				ws.wm.Log.Errorf("Connect XRP node failed unexpected error: %v", err)
+				ws.wm.Log.Errorf("Connect node failed unexpected error: %v", err)
 				ws.disconnected <- struct{}{}
 			} else {
-				ws.wm.Log.Infof("Connect XRP node successfully.")
+				ws.wm.Log.Infof("Connect node successfully.")
 			}
 			//ws.Call("world", nil)
 		case <-ws.disconnected:
@@ -296,7 +296,7 @@ func (ws *WSClient) send(data map[string]interface{}) error {
 func (ws *WSClient) openPipe() error {
 
 	//if ws.debug {
-		ws.wm.Log.Debug("openPipe")
+	ws.wm.Log.Debug("openPipe")
 	//}
 
 	if !ws.isConnect {
@@ -316,7 +316,7 @@ func (ws *WSClient) openPipe() error {
 func (ws *WSClient) writePump() {
 
 	//if ws.debug {
-		ws.wm.Log.Debug("writePump start")
+	ws.wm.Log.Debug("writePump start")
 	//}
 
 	ticker := time.NewTicker(PingPeriod) //发送心跳间隔事件要<等待时间
@@ -324,7 +324,7 @@ func (ws *WSClient) writePump() {
 		ticker.Stop()
 		//ws.close()
 		//if ws.debug {
-			ws.wm.Log.Debug("writePump end")
+		ws.wm.Log.Debug("writePump end")
 		//}
 	}()
 	for {
@@ -364,7 +364,7 @@ func (ws *WSClient) write(mt int, message []byte) error {
 func (ws *WSClient) readPump() {
 
 	//if ws.debug {
-		ws.wm.Log.Debug("readPump start")
+	ws.wm.Log.Debug("readPump start")
 	//}
 
 	ws.c.SetReadDeadline(time.Now().Add(PongWait)) //设置客户端心跳响应的最后限期
@@ -375,7 +375,7 @@ func (ws *WSClient) readPump() {
 	defer func() {
 		ws.close()
 		//if ws.debug {
-			ws.wm.Log.Debug("readPump end")
+		ws.wm.Log.Debug("readPump end")
 		//}
 	}()
 

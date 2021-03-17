@@ -1,9 +1,9 @@
 package openwtester
 
 import (
+	"github.com/Assetsadapter/polkadot-adapter/polkadot"
 	"github.com/blocktree/openwallet/v2/log"
 	"github.com/blocktree/openwallet/v2/openw"
-	"github.com/blocktree/polkadot-adapter/polkadot"
 )
 
 func init() {
