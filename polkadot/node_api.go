@@ -51,7 +51,6 @@ func NewClient(url string, debug bool) *Client {
 
 	api := req.New()
 	c.client = api
-	c.client.SetTimeout(3 * time.Second)
 	return &c
 }
 
