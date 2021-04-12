@@ -550,8 +550,8 @@ func (bs *DOTBlockScanner) extractTransaction(trx *Transaction, result *ExtractR
 
 	if trx.To == BATCH_CHARGE_TO_TAG && len(trx.ToArr) > 0 {
 		log.Debug("blockscaner fund BATCH_CHARGE_TO_TAG ")
+		trx.ToDecArr = make([]string, 0)
 		for _, toStr := range trx.ToArr {
-			trx.ToDecArr = make([]string, 0)
 			toAddr := strings.Split(toStr, ":")[0]
 			toAmount := strings.Split(toStr, ":")[1]
 
