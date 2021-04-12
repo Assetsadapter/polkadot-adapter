@@ -115,7 +115,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 							if callArgs.Exists() {
 								callDest := gjson.Get(callArgs.Raw, "dest")
 								if callDest.Exists() {
-									dest = gjson.Get(callDest.Raw, "Id").String()
+									dest = gjson.Get(callDest.Raw, "id").String()
 								}
 								value = gjson.Get(callArgs.Raw, "value").String()
 							}
