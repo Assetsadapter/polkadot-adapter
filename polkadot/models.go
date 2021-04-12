@@ -240,7 +240,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 			//argsTo = gjson.Get(args.Raw, "dest").String()
 			dest := gjson.Get(args.Raw, "dest")
 			if dest.Exists() {
-				argsTo = gjson.Get(dest.Raw, "Id").String()
+				argsTo = gjson.Get(dest.Raw, "id").String()
 			}
 			argsAmountStr = gjson.Get(args.Raw, "value").String()
 		}
