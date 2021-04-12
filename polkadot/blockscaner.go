@@ -18,6 +18,7 @@ package polkadot
 import (
 	"errors"
 	"fmt"
+	"github.com/prometheus/common/log"
 	"strconv"
 	"strings"
 
@@ -545,6 +546,7 @@ func (bs *DOTBlockScanner) extractTransaction(trx *Transaction, result *ExtractR
 
 	//此为多地址输出
 	if trx.To == BATCH_CHARGE_TO_TAG && len(trx.ToArr) > 0 {
+		log.Debug("blockscaner fund BATCH_CHARGE_TO_TAG ")
 		for _, toStr := range trx.ToArr {
 			trx.ToDecArr = make([]string, 0)
 			toAddr := strings.Split(toStr, ":")[0]

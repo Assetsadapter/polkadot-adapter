@@ -140,7 +140,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 					}
 				}
 			}
-
+			log.Debug("dot batchTransaction:", batchTransaction)
 			for _, event := range gjson.Get(extrinsic.Raw, "events").Array() {
 				eventPallet := ""
 				eventMethod := ""
@@ -209,6 +209,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 					ToArr:       toArr,
 				}
 
+				log.Debug("batch deposit txid : ", txid, ",from: ", batchTransactionItem.From, ",to: ", BATCH_CHARGE_TO_TAG)
 				transactions = append(transactions, &transaction)
 				break
 			}
