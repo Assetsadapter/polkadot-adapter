@@ -319,6 +319,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 			transactions = append(transactions, &transaction)
 		}
 	}
+	log.Debug(" dot end extractTransaction  ", transactions)
 
 	return transactions
 }

@@ -260,6 +260,7 @@ func (bs *DOTBlockScanner) scanBlock(height uint64) (*Block, error) {
 	}
 
 	bs.wm.Log.Std.Info("block scanner scanning height: %d ...", block.Height)
+	bs.wm.Log.Std.Info("block scanner scanning data: %v ...", block)
 
 	err = bs.BatchExtractTransaction(block.Height, block.Hash, block.Transactions, false)
 	if err != nil {
