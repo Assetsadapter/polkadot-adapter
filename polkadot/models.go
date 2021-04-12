@@ -210,6 +210,7 @@ func GetTransactionInBlock(json *gjson.Result) []*Transaction {
 				}
 
 				log.Debug("batch deposit txid : ", txid, ",from: ", batchTransactionItem.From, ",to: ", BATCH_CHARGE_TO_TAG)
+				log.Debug(" dot extractTransaction  ", transaction)
 				transactions = append(transactions, &transaction)
 				break
 			}
